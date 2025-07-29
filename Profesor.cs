@@ -9,7 +9,16 @@ namespace Ejercicio70
     internal class Profesor
     {
         int id { get; set; }
+        string nombre { get; set; }
         string estado { get; set; }
         Cola cola { get; set; }
+
+        public Profesor(int id, string nombre,  Cola cola)
+        {
+            this.id = id;
+            this.nombre = nombre;
+            this.estado = "Libre";
+            this.cola = cola;
+        }
     }
 }

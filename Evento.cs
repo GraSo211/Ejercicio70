@@ -13,5 +13,6 @@ namespace Ejercicio70
         float tiempoFin { get; set; }
         Cliente cliente { get; set; }
         Profesor profesor{ get; set; }
+            
     }
 }

@@ -18,7 +18,11 @@ namespace Ejercicio70
             private int horaFinPract { get; set; }
             private int horaFinExamen { get; set; }
 
+            private float reloj { get; set; }
+            private List<Evento> eventos { get; set; }
+
             private List<Cliente> listaClientes { get; set; }
+            
 
         public Simulacion(int cantidadAlumnos, float finPartePractica, float finCorreccionPartePracticaA, float finCorreccionPartePracticaB, float finCorreccionParteTeorica, float porcAprobacionPract, float porcAprobacionTeo, int horaFinPract, int horaFinExamen)
             {
@@ -31,23 +35,33 @@ namespace Ejercicio70
                 this.porcAprobacionTeo = porcAprobacionTeo;
                 this.horaFinPract = horaFinPract;
                 this.horaFinExamen = horaFinExamen;
-                this.listaClientes = new List<Cliente>();
-
-
         }
 
 
             public void IniciarSimulacion()
             {
-                System.Diagnostics.Debug.WriteLine($"Cantidad de Alumnos: {cantidadAlumnos}");
+                for (int i = 1; i <= cantidadAlumnos; i++)
+                {
+                    Cliente cliente = new Cliente(i);
+                    listaClientes.Add(cliente);
 
-            for (int i =1; i<=cantidadAlumnos; i++)
-            {
-                Cliente cliente= new Cliente(i);
-                listaClientes.Add(cliente);
+                }
+                Cola colaAdjuntos = new Cola(1, "Cola_Profesores_Adjuntos");
+                Cola colaTitular = new Cola(2, "Cola_Titular_Catedra");
 
+                Profesor profesorAdjunto1 = new Profesor(1,"Adjunto_1", cola_adjuntos);
+                Profesor profesorAdjunto2 = new Profesor(2, "Adjunto_2", cola_adjuntos);
+                Profesor titularCatedra = new Profesor(3, "Titular_Catedra", cola_titular);
+                
             }
-
-        }
+        }                                                         
+                 
     
-}
+    public struct Vector_Estado
+    {
+        public int id { get; set; }
+        public string eventoActual { get; set; }
+        public Vector_Estado() { }
+    }
+}                                                                 
+                                                                  

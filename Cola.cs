@@ -12,4 +12,12 @@ namespace Ejercicio70
         string nombre { get; set; }
         List<Cliente> clientes { get; set; }
 
+        public Cola(int id, string nombre) {
+            this.id = id;
+            this.nombre = nombre;
+            this.clientes = new List<Cliente>();
+        }
+
     }
+
+}
