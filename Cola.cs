@@ -9,12 +9,12 @@ namespace Ejercicio70
     {
         int id { get; set; }
         string nombre { get; set; }
-        public List<Alumno> Alumnos { get; set; }
+        public Queue<Alumno> Alumnos { get; set; }
 
         public Cola(int id, string nombre) {
             this.id = id;
             this.nombre = nombre;
-            this.Alumnos = new List<Alumno>();
+            this.Alumnos = new Queue<Alumno>();
         }
 
     }

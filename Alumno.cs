@@ -9,7 +9,7 @@ namespace Ejercicio70
     internal class Alumno
     {
         int id { get; set; }
-        string estado { get; set; }
+        public string estado { get; set; }
 
 
 

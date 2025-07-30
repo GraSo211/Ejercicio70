@@ -1,108 +1,115 @@
-﻿using System;
+﻿using CsvHelper;
+using System;
 using System.Globalization;
-using System.Text;
-using CsvHelper;
-
 using System.IO;
+using System.Reflection;
+using System.Text;
 namespace Ejercicio70
 {
     internal class Simulacion
+    {
+        public static int cantidadAlumnos { get; set; }
+        public static float finPartePractica { get; set; }
+        public static float finCorreccionPartePracticaA { get; set; }
+        public static float finCorreccionPartePracticaB { get; set; }
+        public static float finCorreccionParteTeorica { get; set; }
+        public static float porcAprobacionPract { get; set; }
+        public static float porcAprobacionTeo { get; set; }
+        public static int horaFinPract { get; set; }
+        public static int horaFinExamen { get; set; }
+
+
+        private List<VectorEstado> listaVectoresEstado { get; set; }
+
+
+        private float reloj { get; set; }
+        private Profesor adjunto1 { get; set; }
+        private Profesor adjunto2 { get; set; }
+        private Profesor titularCatedra { get; set; }
+        private Cola colaAdjuntos { get; set; }
+        private Cola colaTitular { get; set; }
+        private float acumTiempoTotalExamenAlumnosAprobados { get; set; }
+        private int contAlumnosAprobados { get; set; }
+        private List<Alumno> listaAlumnos { get; set; }
+        private List<Evento> colaEventos { get; set; }
+
+        private Evento eventoActual { get; set; }
+
+
+        public Simulacion(int cantidadAlumnosP, float finPartePracticaP, float finCorreccionPartePracticaAP, float finCorreccionPartePracticaBP, float finCorreccionParteTeoricaP, float porcAprobacionPractP, float porcAprobacionTeoP, int horaFinPractP, int horaFinExamenP)
         {
-            private int cantidadAlumnos { get; set; }
-            private float finPartePractica { get; set; }
-            private float finCorreccionPartePracticaA { get; set; }
-            private float finCorreccionPartePracticaB { get; set; }
-            private float finCorreccionParteTeorica { get; set; }
-            private float porcAprobacionPract { get; set; }
-            private float porcAprobacionTeo { get; set; }
-            private int horaFinPract { get; set; }
-            private int horaFinExamen { get; set; }
-            
-
-            private List<VectorEstado> listaVectoresEstado { get; set; }
+            cantidadAlumnos = cantidadAlumnosP;
+            finPartePractica = finPartePracticaP;
+            finCorreccionPartePracticaA = finCorreccionPartePracticaAP;
+            finCorreccionPartePracticaB = finCorreccionPartePracticaBP;
+            finCorreccionParteTeorica = finCorreccionParteTeoricaP;
+            porcAprobacionPract = porcAprobacionPractP;
+            porcAprobacionTeo = porcAprobacionTeoP;
+            horaFinPract = horaFinPractP;
+            horaFinExamen = horaFinExamenP;
 
 
-            private float reloj { get; set; }
-            private Profesor adjunto1 { get; set; }
-            private Profesor adjunto2 { get; set; }
-            private Profesor titularCatedra { get; set; }
-            private Cola colaAdjuntos { get; set; }
-            private Cola colaTitular { get; set; }
-            private float acumTiempoTotalExamenAlumnosAprobados { get; set; }
-            private int contAlumnosAprobados { get; set; }
-            private List<Alumno> listaAlumnos { get; set; }
-            private List<Evento> colaEventos { get; set; }
-
-            private Evento eventoActual { get; set; }
-
-
-        public Simulacion(int cantidadAlumnos, float finPartePractica, float finCorreccionPartePracticaA, float finCorreccionPartePracticaB, float finCorreccionParteTeorica, float porcAprobacionPract, float porcAprobacionTeo, int horaFinPract, int horaFinExamen)
-            {
-                this.cantidadAlumnos = cantidadAlumnos;
-                this.finPartePractica = finPartePractica;
-                this.finCorreccionPartePracticaA = finCorreccionPartePracticaA;
-                this.finCorreccionPartePracticaB = finCorreccionPartePracticaB;
-                this.finCorreccionParteTeorica = finCorreccionParteTeorica;
-                this.porcAprobacionPract = porcAprobacionPract;
-                this.porcAprobacionTeo = porcAprobacionTeo;
-                this.horaFinPract = horaFinPract;
-                this.horaFinExamen = horaFinExamen;
-
-                
-                this.listaVectoresEstado = new List<VectorEstado>();
+            this.listaVectoresEstado = new List<VectorEstado>();
 
 
 
-            this.reloj = horaFinPract;    
-                this.colaAdjuntos = new Cola(1, "Cola_Profesores_Adjuntos");
-                this.colaTitular = new Cola(2, "Cola_Titular_Catedra");
-                this.adjunto1 = new Profesor(1, "Adjunto_1", colaAdjuntos);
-                this.adjunto2 = new Profesor(2, "Adjunto_2", colaAdjuntos);
-                this.titularCatedra = new Profesor(3, "Titular_Catedra", colaTitular);
-                this.acumTiempoTotalExamenAlumnosAprobados = 0;
-                this.contAlumnosAprobados = 0;
-                this.listaAlumnos = new List<Alumno>();
-                this.colaEventos = new List<Evento>();
+            this.reloj = horaFinPract;
+            this.colaAdjuntos = new Cola(1, "Cola_Profesores_Adjuntos");
+            this.colaTitular = new Cola(2, "Cola_Titular_Catedra");
+            this.adjunto1 = new Profesor(1, "Adjunto_1", colaAdjuntos);
+            this.adjunto2 = new Profesor(2, "Adjunto_2", colaAdjuntos);
+            this.titularCatedra = new Profesor(3, "Titular_Catedra", colaTitular);
+            this.acumTiempoTotalExamenAlumnosAprobados = 0;
+            this.contAlumnosAprobados = 0;
+            this.listaAlumnos = new List<Alumno>();
+            this.colaEventos = new List<Evento>();
         }
 
 
-            public void Simular()
+        public void Simular()
+        {
+            for (int i = 1; i <= cantidadAlumnos; i++)
             {
-                for (int i = 1; i <= cantidadAlumnos; i++)
-                {
-                    Alumno Alumno = new Alumno(i);
-                    listaAlumnos.Add(Alumno);
+                Alumno Alumno = new Alumno(i);
+                listaAlumnos.Add(Alumno);
 
-                }
-            
+            }
+
             int idVectorEstado = 1;
-            VectorEstado vectorEstado = new VectorEstado(idVectorEstado++, "init", reloj.ToString(),"","","","","","","","","","","","","","","","",adjunto1.estado,adjunto2.estado,colaAdjuntos.Alumnos.Count.ToString(),titularCatedra.estado,colaTitular.Alumnos.Count.ToString(),acumTiempoTotalExamenAlumnosAprobados.ToString(),contAlumnosAprobados.ToString(),listaAlumnos);
-            Evento eventoFinPartePractica = new FinPartePractica(reloj, listaAlumnos[0], titularCatedra);
-            eventoFinPartePractica.GenerarEvento(ref vectorEstado, finPartePractica);
-            
-            
-            colaEventos.Add(eventoFinPartePractica);
+            VectorEstado vectorEstado = new VectorEstado(idVectorEstado++, "init", reloj.ToString(), "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", adjunto1.estado, adjunto2.estado, colaAdjuntos.Alumnos.Count.ToString(), titularCatedra.estado, colaTitular.Alumnos.Count.ToString(), acumTiempoTotalExamenAlumnosAprobados.ToString(), contAlumnosAprobados.ToString(), listaAlumnos);
+            Evento eventoFinPartePractica = new FinPartePractica("Fin_Parte_Practica",reloj, listaAlumnos[0], adjunto1, adjunto1, titularCatedra);
+            eventoFinPartePractica.GenerarEvento(ref vectorEstado);
 
+            eventoActual = eventoFinPartePractica;
+            colaEventos.Add(eventoFinPartePractica);
+            listaVectoresEstado.Add(vectorEstado);
             float eventoMenorTiempo = reloj;
-            while (idVectorEstado <10 )
+            while (idVectorEstado <= 10)
             {
                 // Comienza el sistema
                 // Comenzamos revisando cual es el evento que hay que resolver, para ello buscamos el que suceda mas proximo al reloj actual
-
+                
                 foreach (Evento i in colaEventos)
                 {
-                    if (i.reloj >= eventoMenorTiempo) 
-                    { 
+
+                    if (i.reloj <= eventoMenorTiempo)
+                    {
                         eventoMenorTiempo = i.reloj;
                         eventoActual = i;
                     }
                 }
 
                 // Resolvemos el evento actual
-                eventoActual.ResolverEvento(ref vectorEstado);
-                listaVectoresEstado.Add(vectorEstado);
+                vectorEstado.eventoActual = eventoActual.nombre;
+                vectorEstado.reloj = eventoActual.reloj.ToString();
+                eventoActual.ResolverEvento(ref vectorEstado, colaEventos);
+                colaEventos.Remove(eventoActual);
 
-                idVectorEstado++;
+                listaVectoresEstado.Add(vectorEstado);
+                
+                idVectorEstado ++;
+                vectorEstado.id = idVectorEstado;
+                
             }
 
 
@@ -110,22 +117,34 @@ namespace Ejercicio70
             string ruta = "E:\\Proyectos\\sim_final_tp\\ResultadosSimulacion.csv";
 
             List<string> csv = new List<string>();
-            string header = ",,FIN_DE_PARTE_PRACTICA,,,FIN_CORRECCION_ADJUNTO_1,,,FIN_CORRECCION_ADJUNTO_2,,,APROBACION_PARTE_PRACTICA,,FIN_CORRECCION_PARTE_TEORICA,,APROBACION_PARTE_TEORICA,,FIN_DE_EXAMEN,ADJUNTO_1,ADJUNTO_2,,TITULAR_CATEDRA,,ACUM_TIEMPO_EXAMEN_ALUMNOS_APROBADOS,CONT_APROBADOS";
-            string subHeader = "EVENTO,RELOJ,RND,TIEMPO,FIN_PARTE_PRACTICA,RND,TIEMPO,FIN_CORRECCION,RND,TIEMPO,FIN_CORRECCION,RND,ESTADO,TIEMPO,FIN_PARTE_TEORICA,RND,ESTADO,HORA,ESTADO,ESTADO,COLA_PROFESORES,ESTADO,COLA_TITULAR,, ";
-            for (int i=1; i<= cantidadAlumnos;i++)
+            string header = ",,,FIN_DE_PARTE_PRACTICA,,,FIN_CORRECCION_ADJUNTO_1,,,FIN_CORRECCION_ADJUNTO_2,,,APROBACION_PARTE_PRACTICA,,FIN_CORRECCION_PARTE_TEORICA,,APROBACION_PARTE_TEORICA,,FIN_DE_EXAMEN,ADJUNTO_1,ADJUNTO_2,,TITULAR_CATEDRA,,ACUM_TIEMPO_EXAMEN_ALUMNOS_APROBADOS,CONT_APROBADOS";
+            string subHeader = "NRO,EVENTO,RELOJ,RND,TIEMPO,FIN_PARTE_PRACTICA,RND,TIEMPO,FIN_CORRECCION,RND,TIEMPO,FIN_CORRECCION,RND,ESTADO,TIEMPO,FIN_PARTE_TEORICA,RND,ESTADO,HORA,ESTADO,ESTADO,COLA_PROFESORES,ESTADO,COLA_TITULAR,, ";
+            for (int i = 1; i <= cantidadAlumnos; i++)
             {
-                header += ", ALUMNO_"+i;
+                header += ", ALUMNO_" + i;
                 subHeader += ",ESTADO";
             }
             csv.Add(header);
             csv.Add(subHeader);
 
-            foreach(VectorEstado vE in listaVectoresEstado)
+            foreach (VectorEstado vE in listaVectoresEstado)
             {
-                
+                string linea = $"{vE.id},{vE.eventoActual},{vE.reloj},{vE.rndfinPartePractica},{vE.tiempofinPartePractica},{vE.finfinPartePractica},{vE.rndfinCorreccionPartePracticaAdjunto1},{vE.tiempofinCorreccionPartePracticaAdjunto1},{vE.finfinCorreccionPartePracticaAdjunto1},{vE.rndfinCorreccionPartePracticaAdjunto2},{vE.tiempofinCorreccionPartePracticaAdjunto2},{vE.finfinCorreccionPartePracticaAdjunto2},{vE.rndAprobacionPartePractica},{vE.estadoAprobacionPartePractica},{vE.tiempofinCorreccionParteTeorica},{vE.finfinCorreccionParteTeorica},{vE.rndAprobacionParteTeorica},{vE.estadoAprobacionParteTeorica},{vE.horafinExamen},{vE.estadoadjunto1},{vE.estadoadjunto2},{vE.colaAdjuntos},{vE.titularCatedra},{vE.colaTitular},{vE.acumTiempoTotalExamenAlumnosAprobados},{vE.contAlumnosAprobados},";
+                foreach(Alumno a in vE.listaAlumnos)
+                {
+                    linea += $"{a.estado},";
+                }
+                csv.Add(linea);
             }
-            File.WriteAllLines(ruta,csv,Encoding.UTF8);
-
+            try
+            {
+                File.WriteAllLines(ruta, csv, Encoding.UTF8);
+            }
+            catch (Exception IOException)
+            {
+                // NO HACEMOS NADA XD
+            }
+            
 
 
 
@@ -135,9 +154,9 @@ namespace Ejercicio70
 
 
         }
-        }                                                         
-                 
-    
+    }
+
+
     internal struct VectorEstado
     {
         public int id { get; set; }
@@ -150,7 +169,7 @@ namespace Ejercicio70
         public string tiempofinCorreccionPartePracticaAdjunto1 { get; set; }
         public string finfinCorreccionPartePracticaAdjunto1 { get; set; }
         public string rndfinCorreccionPartePracticaAdjunto2 { get; set; }
-        public string tiempoCorreccionPartePracticaAdjunto2 { get; set; }
+        public string tiempofinCorreccionPartePracticaAdjunto2 { get; set; }
         public string finfinCorreccionPartePracticaAdjunto2 { get; set; }
         public string rndAprobacionPartePractica { get; set; }
         public string estadoAprobacionPartePractica { get; set; }
@@ -159,7 +178,7 @@ namespace Ejercicio70
         public string rndAprobacionParteTeorica { get; set; }
         public string estadoAprobacionParteTeorica { get; set; }
         public string horafinExamen { get; set; }
-        public string  estadoadjunto1 { get; set; }
+        public string estadoadjunto1 { get; set; }
         public string estadoadjunto2 { get; set; }
         public string colaAdjuntos { get; set; }
         public string titularCatedra { get; set; }
@@ -179,7 +198,7 @@ namespace Ejercicio70
     string tiempofinCorreccionPartePracticaAdjunto1,
     string finfinCorreccionPartePracticaAdjunto1,
     string rndfinCorreccionPartePracticaAdjunto2,
-    string tiempoCorreccionPartePracticaAdjunto2,
+    string tiempofinCorreccionPartePracticaAdjunto2,
     string finfinCorreccionPartePracticaAdjunto2,
     string rndAprobacionPartePractica,
     string estadoAprobacionPartePractica,
@@ -207,7 +226,7 @@ namespace Ejercicio70
             this.tiempofinCorreccionPartePracticaAdjunto1 = tiempofinCorreccionPartePracticaAdjunto1;
             this.finfinCorreccionPartePracticaAdjunto1 = finfinCorreccionPartePracticaAdjunto1;
             this.rndfinCorreccionPartePracticaAdjunto2 = rndfinCorreccionPartePracticaAdjunto2;
-            this.tiempoCorreccionPartePracticaAdjunto2 = tiempoCorreccionPartePracticaAdjunto2;
+            this.tiempofinCorreccionPartePracticaAdjunto2 = tiempofinCorreccionPartePracticaAdjunto2;
             this.finfinCorreccionPartePracticaAdjunto2 = finfinCorreccionPartePracticaAdjunto2;
             this.rndAprobacionPartePractica = rndAprobacionPartePractica;
             this.estadoAprobacionPartePractica = estadoAprobacionPartePractica;
@@ -227,5 +246,4 @@ namespace Ejercicio70
         }
 
     }
-}                                                                 
-                                                                  
+}
