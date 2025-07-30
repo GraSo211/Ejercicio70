@@ -10,7 +10,7 @@ namespace Ejercicio70
     {
         int id { get; set; }
         string nombre { get; set; }
-        string estado { get; set; }
+        public string estado { get; set; }
         Cola cola { get; set; }
 
         public Profesor(int id, string nombre,  Cola cola)

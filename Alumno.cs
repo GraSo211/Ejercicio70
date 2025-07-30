@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Ejercicio70
 {
-    internal class Cliente
+    internal class Alumno
     {
         int id { get; set; }
         string estado { get; set; }
 
 
 
-        public Cliente(int id)
+        public Alumno(int id)
         {
             this.id = id;
             this.estado = "En_Examen";

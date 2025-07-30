@@ -65,7 +65,7 @@ namespace Ejercicio70
             int horaFinExamen = int.Parse(this.InputHoraTerminarExamen.Text);
 
             Simulacion simulacion = new Simulacion(cantidadAlumnos, InputFinPract, InputFinCorrecPractA, InputFinCorrecPractB, InputFinCorrecTeo, InputPorcAprobPract, InputPorcAprobTeo, horaFinPract, horaFinExamen );
-            simulacion.IniciarSimulacion();
+            simulacion.Simular();
 
         }
 
