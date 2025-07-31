@@ -1,5 +1,7 @@
 ﻿using CsvHelper;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -18,7 +20,7 @@ namespace Ejercicio70
         public static int horaFinPract { get; set; }
         public static int horaFinExamen { get; set; }
 
-
+        public static int indexAlumnosProcesar { get; set; }
         private List<VectorEstado> listaVectoresEstado { get; set; }
 
 
@@ -48,7 +50,7 @@ namespace Ejercicio70
             horaFinPract = horaFinPractP;
             horaFinExamen = horaFinExamenP;
 
-
+            indexAlumnosProcesar = 0;
             this.listaVectoresEstado = new List<VectorEstado>();
 
 
@@ -70,34 +72,36 @@ namespace Ejercicio70
         {
             for (int i = 1; i <= cantidadAlumnos; i++)
             {
-                Alumno Alumno = new Alumno(i);
-                listaAlumnos.Add(Alumno);
+                Alumno alumno = new Alumno(i);
+                listaAlumnos.Add(alumno);
 
             }
 
             int idVectorEstado = 1;
             VectorEstado vectorEstado = new VectorEstado(idVectorEstado++, "init", reloj.ToString(), "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", adjunto1.estado, adjunto2.estado, colaAdjuntos.Alumnos.Count.ToString(), titularCatedra.estado, colaTitular.Alumnos.Count.ToString(), acumTiempoTotalExamenAlumnosAprobados.ToString(), contAlumnosAprobados.ToString(), listaAlumnos);
-            Evento eventoFinPartePractica = new FinPartePractica("Fin_Parte_Practica",reloj, listaAlumnos[0], adjunto1, adjunto1, titularCatedra);
+
+
+            Evento eventoFinPartePractica = new FinPartePractica("Fin_Parte_Practica", reloj, listaAlumnos, listaAlumnos[0], adjunto1, adjunto2, titularCatedra);
             eventoFinPartePractica.GenerarEvento(ref vectorEstado);
 
             eventoActual = eventoFinPartePractica;
             colaEventos.Add(eventoFinPartePractica);
+            List<Alumno> copiaListaAlumnos = listaAlumnos.Select(a => a.Clone()).ToList();
+            vectorEstado.listaAlumnos = copiaListaAlumnos;
             listaVectoresEstado.Add(vectorEstado);
             float eventoMenorTiempo = reloj;
-            while (idVectorEstado <= 10)
+
+            Evento eventoFinExamen = new FinExamen("Fin_Examen", horaFinExamen, listaAlumnos, listaAlumnos[0], adjunto1, adjunto2, titularCatedra);
+            eventoFinExamen.GenerarEvento();
+            colaEventos.Add(eventoFinExamen);
+
+            while (idVectorEstado <= 15 + 1)
             {
                 // Comienza el sistema
                 // Comenzamos revisando cual es el evento que hay que resolver, para ello buscamos el que suceda mas proximo al reloj actual
-                
-                foreach (Evento i in colaEventos)
-                {
-
-                    if (i.reloj <= eventoMenorTiempo)
-                    {
-                        eventoMenorTiempo = i.reloj;
-                        eventoActual = i;
-                    }
-                }
+                if (colaEventos.Count() == 0) break;
+                eventoActual = colaEventos.OrderBy(e => e.reloj).First();
+                eventoMenorTiempo = eventoActual.reloj;
 
                 // Resolvemos el evento actual
                 vectorEstado.eventoActual = eventoActual.nombre;
@@ -105,11 +109,14 @@ namespace Ejercicio70
                 eventoActual.ResolverEvento(ref vectorEstado, colaEventos);
                 colaEventos.Remove(eventoActual);
 
+                copiaListaAlumnos = listaAlumnos.Select(a => a.Clone()).ToList();
+                vectorEstado.listaAlumnos = copiaListaAlumnos;
+
                 listaVectoresEstado.Add(vectorEstado);
-                
-                idVectorEstado ++;
                 vectorEstado.id = idVectorEstado;
-                
+                idVectorEstado++;
+
+
             }
 
 
@@ -130,7 +137,7 @@ namespace Ejercicio70
             foreach (VectorEstado vE in listaVectoresEstado)
             {
                 string linea = $"{vE.id},{vE.eventoActual},{vE.reloj},{vE.rndfinPartePractica},{vE.tiempofinPartePractica},{vE.finfinPartePractica},{vE.rndfinCorreccionPartePracticaAdjunto1},{vE.tiempofinCorreccionPartePracticaAdjunto1},{vE.finfinCorreccionPartePracticaAdjunto1},{vE.rndfinCorreccionPartePracticaAdjunto2},{vE.tiempofinCorreccionPartePracticaAdjunto2},{vE.finfinCorreccionPartePracticaAdjunto2},{vE.rndAprobacionPartePractica},{vE.estadoAprobacionPartePractica},{vE.tiempofinCorreccionParteTeorica},{vE.finfinCorreccionParteTeorica},{vE.rndAprobacionParteTeorica},{vE.estadoAprobacionParteTeorica},{vE.horafinExamen},{vE.estadoadjunto1},{vE.estadoadjunto2},{vE.colaAdjuntos},{vE.titularCatedra},{vE.colaTitular},{vE.acumTiempoTotalExamenAlumnosAprobados},{vE.contAlumnosAprobados},";
-                foreach(Alumno a in vE.listaAlumnos)
+                foreach (Alumno a in vE.listaAlumnos)
                 {
                     linea += $"{a.estado},";
                 }
@@ -139,12 +146,13 @@ namespace Ejercicio70
             try
             {
                 File.WriteAllLines(ruta, csv, Encoding.UTF8);
+                Process.Start("explorer.exe", @"E:\Proyectos\sim_final_tp\ResultadosSimulacion.csv");
             }
             catch (Exception IOException)
             {
                 // NO HACEMOS NADA XD
             }
-            
+
 
 
 

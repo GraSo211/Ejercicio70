@@ -12,15 +12,17 @@ namespace Ejercicio70
         protected float rnd { get; set; }
         protected float entreTiempo { get; set; }
         public float reloj { get; set; }
+        protected List<Alumno> listaAlumnos { get; set; }
         protected Alumno alumno { get; set; }
         protected Profesor adjunto1 { get; set; }
         protected Profesor adjunto2 { get; set; }
         protected Profesor titularCatedra { get; set; }
 
-        public Evento(string nombre, float reloj, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra)
+        public Evento(string nombre, float reloj, List<Alumno> listaAlumnos, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra)
         {
             this.nombre = nombre;
             this.reloj = reloj;
+            this.listaAlumnos = listaAlumnos;
             this.alumno = alumno;
             this.adjunto1 = adjunto1;
             this.adjunto2 = adjunto2;
@@ -51,21 +53,20 @@ namespace Ejercicio70
     internal class FinPartePractica : Evento
     {
 
-        public FinPartePractica(string nombre, float reloj, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, alumno, adjunto1, adjunto2, titularCatedra)
-        {
+        public FinPartePractica(string nombre, float reloj, List<Alumno> listaAlumnos, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, listaAlumnos, alumno, adjunto1, adjunto2, titularCatedra) { }
 
-        }
+
 
         public override void GenerarEvento()
         {
-            rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             entreTiempo = -Simulacion.finPartePractica * (float)Math.Log(1 - rnd);
             reloj += entreTiempo;
         }
 
         public override void GenerarEvento(ref VectorEstado vectorEstado)
         {
-            rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             entreTiempo = (float)Math.Round(-Simulacion.finPartePractica * (float)Math.Log(1 - rnd), 2);
             reloj += entreTiempo;
             vectorEstado.rndfinPartePractica = rnd.ToString();
@@ -77,20 +78,28 @@ namespace Ejercicio70
         public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
         {
             // GENERAMOS EL PROXIMO FIN
-            Evento eventoFinPartePractica = new FinPartePractica(nombre, reloj, alumno, adjunto1, adjunto2, titularCatedra);
+            int indexProxAlumno = listaAlumnos.IndexOf(alumno) + 1;
+            Alumno proxAlumno = listaAlumnos[indexProxAlumno];
+
+            Evento eventoFinPartePractica = new FinPartePractica(nombre, reloj, listaAlumnos, proxAlumno, adjunto1, adjunto2, titularCatedra);
             eventoFinPartePractica.GenerarEvento(ref vectorEstado);
             colaEventos.Add(eventoFinPartePractica);
 
+
+
             if (adjunto1.estado.Equals("Libre"))
             {
+
+
                 adjunto1.estado = "Ocupado";
                 alumno.estado = "En_Correccion_Adjunto1";
 
                 vectorEstado.estadoadjunto1 = adjunto1.estado;
-                int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
                 vectorEstado.listaAlumnos[i].estado = alumno.estado;
 
-                Evento eventoFinCorreccionAdjunto1 = new FinCorreccionAdjunto1("Fin_Correccion_Adj1", reloj, alumno, adjunto1, adjunto2, titularCatedra);
+                Evento eventoFinCorreccionAdjunto1 = new FinCorreccionAdjunto1("Fin_Correccion_Adj1", reloj, listaAlumnos, alumno, adjunto1, adjunto2, titularCatedra);
                 eventoFinCorreccionAdjunto1.GenerarEvento(ref vectorEstado);
                 colaEventos.Add(eventoFinCorreccionAdjunto1);
 
@@ -103,10 +112,11 @@ namespace Ejercicio70
                 alumno.estado = "En_Correccion_Adjunto2";
 
                 vectorEstado.estadoadjunto2 = adjunto2.estado;
-                int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
                 vectorEstado.listaAlumnos[i].estado = alumno.estado;
 
-                Evento eventoFinCorreccionAdjunto2 = new FinCorreccionAdjunto2("Fin_Correccion_Adj2", reloj, alumno, adjunto1, adjunto2, titularCatedra);
+                Evento eventoFinCorreccionAdjunto2 = new FinCorreccionAdjunto2("Fin_Correccion_Adj2", reloj, listaAlumnos, alumno, adjunto1, adjunto2, titularCatedra);
                 eventoFinCorreccionAdjunto2.GenerarEvento(ref vectorEstado);
                 colaEventos.Add(eventoFinCorreccionAdjunto2);
 
@@ -115,7 +125,8 @@ namespace Ejercicio70
             {
                 adjunto1.cola.Alumnos.Enqueue(alumno);
                 alumno.estado = "En_Cola_Adjuntos";
-                int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
                 vectorEstado.listaAlumnos[i].estado = alumno.estado;
                 vectorEstado.colaAdjuntos = adjunto1.cola.Alumnos.Count().ToString();
             }
@@ -127,13 +138,13 @@ namespace Ejercicio70
     internal class FinCorreccionAdjunto1 : Evento
     {
 
-        public FinCorreccionAdjunto1(string nombre, float reloj, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, alumno, adjunto1, adjunto2, titularCatedra)
+        public FinCorreccionAdjunto1(string nombre, float reloj, List<Alumno> listaAlumnos, Alumno alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, listaAlumnos, alumno, adjunto1, adjunto2, titularCatedra)
         {
 
         }
         public override void GenerarEvento(ref VectorEstado vectorEstado)
         {
-            rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             entreTiempo = (float)Math.Round(Simulacion.finCorreccionPartePracticaA + (rnd * (Simulacion.finCorreccionPartePracticaB - Simulacion.finCorreccionPartePracticaA)), 2);
             reloj += entreTiempo;
             vectorEstado.rndfinCorreccionPartePracticaAdjunto1 = rnd.ToString();
@@ -154,7 +165,7 @@ namespace Ejercicio70
         public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
         {
             // Resolvemos el alumno
-            float rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             bool estadoExamenPractico = generarAprobacion(rnd);
 
             if (estadoExamenPractico == true)
@@ -169,7 +180,8 @@ namespace Ejercicio70
             }
 
             // Actualizamos el vector con los datos del alumno
-            int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+            //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+            int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
             vectorEstado.listaAlumnos[i].estado = alumno.estado;
             vectorEstado.rndAprobacionPartePractica = rnd.ToString();
             vectorEstado.estadoAprobacionPartePractica = estadoExamenPractico ? "Aprobado" : "Desaprobado";
@@ -189,9 +201,10 @@ namespace Ejercicio70
                 Alumno alumnoAtendido = adjunto1.cola.Alumnos.Dequeue();
                 alumnoAtendido.estado = "En_Correccion_Adjunto1";
                 adjunto1.estado = "Ocupado";
-                int j = vectorEstado.listaAlumnos.IndexOf(alumnoAtendido);
+                //int j = vectorEstado.listaAlumnos.IndexOf(alumnoAtendido);
+                int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
                 vectorEstado.listaAlumnos[j].estado = alumnoAtendido.estado;
-                Evento eventoFinCorreccionAdjunto1 = new FinCorreccionAdjunto1("Fin_Correccion_Adj1", reloj, alumnoAtendido, adjunto1, adjunto2, titularCatedra);
+                Evento eventoFinCorreccionAdjunto1 = new FinCorreccionAdjunto1("Fin_Correccion_Adj1", reloj, listaAlumnos, alumnoAtendido, adjunto1, adjunto2, titularCatedra);
                 eventoFinCorreccionAdjunto1.GenerarEvento(ref vectorEstado);
                 colaEventos.Add(eventoFinCorreccionAdjunto1);
             }
@@ -205,15 +218,15 @@ namespace Ejercicio70
 
     internal class FinCorreccionAdjunto2 : Evento
     {
-        public FinCorreccionAdjunto2(string nombre, float reloj, Alumno Alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, Alumno, adjunto1, adjunto2, titularCatedra)
+        public FinCorreccionAdjunto2(string nombre, float reloj, List<Alumno> listaAlumno, Alumno Alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, listaAlumno, Alumno, adjunto1, adjunto2, titularCatedra)
         {
 
         }
 
-        
+
         public override void GenerarEvento(ref VectorEstado vectorEstado)
         {
-            rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             entreTiempo = (float)Math.Round(Simulacion.finCorreccionPartePracticaA + (rnd * (Simulacion.finCorreccionPartePracticaB - Simulacion.finCorreccionPartePracticaA)), 2);
             reloj += entreTiempo;
             vectorEstado.rndfinCorreccionPartePracticaAdjunto2 = rnd.ToString();
@@ -236,7 +249,7 @@ namespace Ejercicio70
         public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
         {
             // Resolvemos el alumno
-            float rnd = (float)Math.Round(new Random().NextDouble(), 2);
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
             bool estadoExamenPractico = generarAprobacion(rnd);
 
             if (estadoExamenPractico == true)
@@ -251,7 +264,8 @@ namespace Ejercicio70
             }
 
             // Actualizamos el vector con los datos del alumno
-            int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+            //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+            int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
             vectorEstado.listaAlumnos[i].estado = alumno.estado;
             vectorEstado.rndAprobacionPartePractica = rnd.ToString();
             vectorEstado.estadoAprobacionPartePractica = estadoExamenPractico ? "Aprobado" : "Desaprobado";
@@ -269,11 +283,12 @@ namespace Ejercicio70
             {
                 // Si hay alumnos en la cola, se atiende al primero
                 Alumno alumnoAtendido = adjunto2.cola.Alumnos.Dequeue();
-                alumnoAtendido.estado = "En_Correccion_Adjunto1";
+                alumnoAtendido.estado = "En_Correccion_Adjunto2";
                 adjunto2.estado = "Ocupado";
-                int j = vectorEstado.listaAlumnos.IndexOf(alumnoAtendido);
+                //int j = vectorEstado.listaAlumnos.IndexOf(alumnoAtendido);
+                int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
                 vectorEstado.listaAlumnos[j].estado = alumnoAtendido.estado;
-                Evento eventoFinCorreccionAdjunto2 = new FinCorreccionAdjunto2("Fin_Correccion_Adj2", reloj, alumnoAtendido, adjunto1, adjunto2, titularCatedra);
+                Evento eventoFinCorreccionAdjunto2 = new FinCorreccionAdjunto2("Fin_Correccion_Adj2", reloj, listaAlumnos, alumnoAtendido, adjunto1, adjunto2, titularCatedra);
                 eventoFinCorreccionAdjunto2.GenerarEvento(ref vectorEstado);
                 colaEventos.Add(eventoFinCorreccionAdjunto2);
             }
@@ -284,33 +299,54 @@ namespace Ejercicio70
         }
 
     }
-    /**
-internal class FinCorreccionTeorico : Evento
-{
-    public FinCorreccionTeorico(float reloj, Alumno Alumno, Profesor profesor) : base(reloj, Alumno, profesor)
+
+    internal class FinCorreccionTeorico : Evento
     {
+        public FinCorreccionTeorico(string nombre, float reloj, List<Alumno> listaAlumno, Alumno Alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, listaAlumno, Alumno, adjunto1, adjunto2, titularCatedra)
+        {
+
+        }
+
+        public override void GenerarEvento(ref VectorEstado vectorEstado)
+        {
+
+        }
+
+        public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
+        {
+            
+        }
 
     }
-
-    public override void ResolverEvento(ref VectorEstado vectorEstado)
+    internal class FinExamen : Evento
     {
+        public FinExamen(string nombre, float reloj, List<Alumno> listaAlumno, Alumno Alumno, Profesor adjunto1, Profesor adjunto2, Profesor titularCatedra) : base(nombre, reloj, listaAlumno, Alumno, adjunto1, adjunto2, titularCatedra)
+        {
+
+        }
+
+        public override void GenerarEvento(ref VectorEstado vectorEstado)
+        {
+
+            reloj = Simulacion.horaFinExamen;
+            vectorEstado.horafinExamen = reloj.ToString();
+
+        }
+
+        public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
+        {
+            foreach(Alumno al in listaAlumnos)
+            {
+                if (al.estado == "En_Examen") {
+                    al.estado = "Desaprobado";
+                }
+                int index = listaAlumnos.IndexOf(al);
+                vectorEstado.listaAlumnos[index].estado = al.estado;
+            }
+            
+            colaEventos.RemoveAll(evento=>evento.nombre == "Fin_Parte_Practica");
+        }
 
     }
-
-}
-internal class FinExamen : Evento
-{
-    public FinExamen(float reloj, Alumno Alumno, Profesor profesor) : base(reloj, Alumno, profesor)
-    {
-
-    }
-
-    public override void ResolverEvento(ref VectorEstado vectorEstado)
-    {
-
-    }
-
-}
-**/
 
 }

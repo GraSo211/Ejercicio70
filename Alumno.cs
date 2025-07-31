@@ -8,7 +8,7 @@ namespace Ejercicio70
 {
     internal class Alumno
     {
-        int id { get; set; }
+        public int id { get; set; }
         public string estado { get; set; }
 
 
@@ -18,6 +18,20 @@ namespace Ejercicio70
             this.id = id;
             this.estado = "En_Examen";
         }
+
+        // Constructor copia para clonado
+        public Alumno(Alumno otro)
+        {
+            this.id = otro.id;
+            this.estado = otro.estado;
+        }
+
+        // Metodo cloanr
+        public Alumno Clone()
+        {
+            return new Alumno(this);
+        }
+
 
     }
 }
