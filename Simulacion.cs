@@ -118,7 +118,9 @@ namespace Ejercicio70
 
 
             }
-
+            // Habiendo salido del while, ya no tenemos eventos por resolver, por lo que calculamos las estadisticas
+            // y actualizamos el vector estado
+            // las estaddisticas toca agregarlas mas abajo del vector
 
 
             string ruta = "E:\\Proyectos\\sim_final_tp\\ResultadosSimulacion.csv";

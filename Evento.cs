@@ -306,15 +306,22 @@ namespace Ejercicio70
         {
 
         }
+        // Necesitamos una function para generar el aprobado teorico copiar la del practico y editarla 
 
         public override void GenerarEvento(ref VectorEstado vectorEstado)
         {
-
+            // Comentario para hacerlo mañana
+            // NO NOS HACE FALTA RANDOM PORQUE ES CONSTANTE
+            // ACA SOLO PONEMOS ENTRE TIEMPO = Simulacion.finCorreccionParteTeorica Y fin haciendo la suma tipica y luego actualizamos el vectorestado
         }
 
         public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
         {
-            
+            // Por aca tenemos que ver si el profesor esta laburadno
+            // si no lo ponemos a laburar, actualizamos el alumno, vemos si aprobo, etc ,etc
+            // si esta trabajando, metemos en cola al alumno y actualizamos la cola de eventos
+            // recordar calcular los tiempo que seria el tiempo actual del alumno - 0 porque es cuando arrancan y a eso lo acumulamos en el acum timepo
+            // si aprobo le subimos a 1 el contador aprobdos
         }
 
     }
