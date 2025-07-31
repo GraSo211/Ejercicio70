@@ -79,6 +79,7 @@ namespace Ejercicio70
         {
             // GENERAMOS EL PROXIMO FIN
             int indexProxAlumno = listaAlumnos.IndexOf(alumno) + 1;
+            if (indexProxAlumno >= Simulacion.cantidadAlumnos) return;
             Alumno proxAlumno = listaAlumnos[indexProxAlumno];
 
             Evento eventoFinPartePractica = new FinPartePractica(nombre, reloj, listaAlumnos, proxAlumno, adjunto1, adjunto2, titularCatedra);
@@ -173,6 +174,28 @@ namespace Ejercicio70
                 // NOS FIJAMOS EN LA COLA DEL TITULAR 
                 // SI ES MAYOR A 0 LO METEMOS A LA COLA
                 // SI NO GENERAMOS EVENTO DE FIN EXAMEN TEORICO
+                if(titularCatedra.estado== "Libre")
+                {
+                    Evento finCorreccionTeorico = new FinCorreccionTeorico("Fin_Correccion_Teorico",reloj,listaAlumnos,alumno,adjunto1,adjunto2,titularCatedra);
+                    finCorreccionTeorico.GenerarEvento(ref vectorEstado);
+                    colaEventos.Add(finCorreccionTeorico);
+                    titularCatedra.estado = "Ocupado";
+                    alumno.estado = "En_Correccion_Titular";
+                    vectorEstado.titularCatedra = titularCatedra.estado;
+                    vectorEstado.estadoadjunto1 = adjunto1.estado;
+                    //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                    int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+                    vectorEstado.listaAlumnos[j].estado = alumno.estado;
+
+                }
+                else
+                {
+                    titularCatedra.cola.Alumnos.Enqueue(alumno);
+                    alumno.estado = "En_Cola_Titular";
+                    int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+                    vectorEstado.listaAlumnos[j].estado = alumno.estado;
+                    vectorEstado.colaTitular = titularCatedra.cola.Alumnos.Count().ToString();
+                }
             }
             else
             {
@@ -257,6 +280,28 @@ namespace Ejercicio70
                 // NOS FIJAMOS EN LA COLA DEL TITULAR 
                 // SI ES MAYOR A 0 LO METEMOS A LA COLA
                 // SI NO GENERAMOS EVENTO DE FIN EXAMEN TEORICO
+                if (titularCatedra.estado == "Libre")
+                {
+                    Evento finCorreccionTeorico = new FinCorreccionTeorico("Fin_Correccion_Teorico", reloj, listaAlumnos, alumno, adjunto1, adjunto2, titularCatedra);
+                    finCorreccionTeorico.GenerarEvento(ref vectorEstado);
+                    colaEventos.Add(finCorreccionTeorico);
+                    titularCatedra.estado = "Ocupado";
+                    alumno.estado = "En_Correccion_Titular";
+                    vectorEstado.titularCatedra = titularCatedra.estado;
+                    vectorEstado.estadoadjunto1 = adjunto1.estado;
+                    //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                    int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+                    vectorEstado.listaAlumnos[j].estado = alumno.estado;
+                }
+                else
+                {
+                    titularCatedra.cola.Alumnos.Enqueue(alumno);
+                    alumno.estado = "En_Cola_Titular";
+                    int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+                    vectorEstado.listaAlumnos[j].estado = alumno.estado;
+                   
+                    vectorEstado.colaTitular = titularCatedra.cola.Alumnos.Count().ToString();
+                }
             }
             else
             {
@@ -312,16 +357,77 @@ namespace Ejercicio70
         {
             // Comentario para hacerlo mañana
             // NO NOS HACE FALTA RANDOM PORQUE ES CONSTANTE
-            // ACA SOLO PONEMOS ENTRE TIEMPO = Simulacion.finCorreccionParteTeorica Y fin haciendo la suma tipica y luego actualizamos el vectorestado
+            // ACA SOLO PONEMOS ENTRE TIEMPO = Simulacion.finCorreccionParteTeorica Y fin haciendo la suma tipica y luego actualizamos el 
+            entreTiempo = Simulacion.finCorreccionParteTeorica;
+            reloj += entreTiempo;
+            vectorEstado.tiempofinCorreccionParteTeorica = entreTiempo.ToString();
+            vectorEstado.finfinCorreccionParteTeorica = reloj.ToString();
+        }
+
+        private bool generarAprobacion(float rnd)
+        {
+            if (rnd <= (Simulacion.porcAprobacionTeo / 100))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public override void ResolverEvento(ref VectorEstado vectorEstado, List<Evento> colaEventos)
         {
-            // Por aca tenemos que ver si el profesor esta laburadno
-            // si no lo ponemos a laburar, actualizamos el alumno, vemos si aprobo, etc ,etc
-            // si esta trabajando, metemos en cola al alumno y actualizamos la cola de eventos
+            // Primero resovler el alumno
+            // Luego ver el estado de la cola del profesor
+            // si hay alumnos lo ponemos a laburar (generamos el evento)
+            // si esta vacia lo ponemos libre
             // recordar calcular los tiempo que seria el tiempo actual del alumno - 0 porque es cuando arrancan y a eso lo acumulamos en el acum timepo
             // si aprobo le subimos a 1 el contador aprobdos
+            rnd = (float)(Math.Truncate(new Random().NextDouble() * 100) / 100);
+            bool estadoAprobacion = generarAprobacion(rnd);
+            if (estadoAprobacion) {
+                alumno.estado = "Aprobado";
+            }
+            else
+            {
+                alumno.estado = "Desaprobado";
+            }
+            // Actualizamos el vector con los datos del alumno
+            //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+            int i = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+            vectorEstado.listaAlumnos[i].estado = alumno.estado;
+            vectorEstado.rndAprobacionParteTeorica = rnd.ToString();
+            vectorEstado.estadoAprobacionParteTeorica = estadoAprobacion ? "Aprobado" : "Desaprobado";
+            if(estadoAprobacion == true)
+            {
+                Simulacion.acumTiempoTotalExamenAlumnosAprobados += reloj;
+                Simulacion.contAlumnosAprobados += 1;
+            }
+            
+
+            if (titularCatedra.cola.Alumnos.Count() == 0)
+            {
+                titularCatedra.estado = "Libre";
+
+            }
+            else
+            {
+                
+                Alumno a = titularCatedra.cola.Alumnos.Dequeue();
+                a.estado = "En_Correccion_Titular";
+
+
+                Evento eventoFinCorreccionTeorico = new FinCorreccionTeorico("Fin_Correccion_Teorico", reloj, listaAlumnos, a, adjunto1, adjunto2, titularCatedra);
+                eventoFinCorreccionTeorico.GenerarEvento(ref vectorEstado);
+                colaEventos.Add(eventoFinCorreccionTeorico);
+                //int i = vectorEstado.listaAlumnos.IndexOf(alumno);
+                int j = vectorEstado.listaAlumnos.FindIndex(a => a.id == alumno.id);
+                vectorEstado.listaAlumnos[j].estado = alumno.estado;
+                vectorEstado.colaTitular = titularCatedra.cola.Alumnos.Count().ToString();
+            }
+
+            vectorEstado.titularCatedra = titularCatedra.estado;
         }
 
     }

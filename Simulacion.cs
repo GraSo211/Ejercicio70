@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -30,8 +31,8 @@ namespace Ejercicio70
         private Profesor titularCatedra { get; set; }
         private Cola colaAdjuntos { get; set; }
         private Cola colaTitular { get; set; }
-        private float acumTiempoTotalExamenAlumnosAprobados { get; set; }
-        private int contAlumnosAprobados { get; set; }
+        public static float acumTiempoTotalExamenAlumnosAprobados { get; set; }
+        public static int contAlumnosAprobados { get; set; }
         private List<Alumno> listaAlumnos { get; set; }
         private List<Evento> colaEventos { get; set; }
 
@@ -61,8 +62,8 @@ namespace Ejercicio70
             this.adjunto1 = new Profesor(1, "Adjunto_1", colaAdjuntos);
             this.adjunto2 = new Profesor(2, "Adjunto_2", colaAdjuntos);
             this.titularCatedra = new Profesor(3, "Titular_Catedra", colaTitular);
-            this.acumTiempoTotalExamenAlumnosAprobados = 0;
-            this.contAlumnosAprobados = 0;
+            acumTiempoTotalExamenAlumnosAprobados = 0;
+            contAlumnosAprobados = 0;
             this.listaAlumnos = new List<Alumno>();
             this.colaEventos = new List<Evento>();
         }
@@ -80,6 +81,10 @@ namespace Ejercicio70
             int idVectorEstado = 1;
             VectorEstado vectorEstado = new VectorEstado(idVectorEstado++, "init", reloj.ToString(), "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", adjunto1.estado, adjunto2.estado, colaAdjuntos.Alumnos.Count.ToString(), titularCatedra.estado, colaTitular.Alumnos.Count.ToString(), acumTiempoTotalExamenAlumnosAprobados.ToString(), contAlumnosAprobados.ToString(), listaAlumnos);
 
+            Evento eventoFinExamen = new FinExamen("Fin_Examen", horaFinExamen, listaAlumnos, listaAlumnos[0], adjunto1, adjunto2, titularCatedra);
+            eventoFinExamen.GenerarEvento();
+            colaEventos.Add(eventoFinExamen);
+            vectorEstado.horafinExamen = horaFinExamen.ToString();
 
             Evento eventoFinPartePractica = new FinPartePractica("Fin_Parte_Practica", reloj, listaAlumnos, listaAlumnos[0], adjunto1, adjunto2, titularCatedra);
             eventoFinPartePractica.GenerarEvento(ref vectorEstado);
@@ -91,11 +96,9 @@ namespace Ejercicio70
             listaVectoresEstado.Add(vectorEstado);
             float eventoMenorTiempo = reloj;
 
-            Evento eventoFinExamen = new FinExamen("Fin_Examen", horaFinExamen, listaAlumnos, listaAlumnos[0], adjunto1, adjunto2, titularCatedra);
-            eventoFinExamen.GenerarEvento();
-            colaEventos.Add(eventoFinExamen);
 
-            while (idVectorEstado <= 15 + 1)
+
+            while (idVectorEstado <= 100000 + 1)
             {
                 // Comienza el sistema
                 // Comenzamos revisando cual es el evento que hay que resolver, para ello buscamos el que suceda mas proximo al reloj actual
@@ -112,6 +115,10 @@ namespace Ejercicio70
                 copiaListaAlumnos = listaAlumnos.Select(a => a.Clone()).ToList();
                 vectorEstado.listaAlumnos = copiaListaAlumnos;
 
+                vectorEstado.horafinExamen = horaFinExamen.ToString();
+                vectorEstado.colaTitular = titularCatedra.cola.Alumnos.Count().ToString();
+                vectorEstado.acumTiempoTotalExamenAlumnosAprobados = acumTiempoTotalExamenAlumnosAprobados.ToString();
+                vectorEstado.contAlumnosAprobados = contAlumnosAprobados.ToString();
                 listaVectoresEstado.Add(vectorEstado);
                 vectorEstado.id = idVectorEstado;
                 idVectorEstado++;
@@ -145,6 +152,15 @@ namespace Ejercicio70
                 }
                 csv.Add(linea);
             }
+
+            csv.Add("");
+            csv.Add("");
+            csv.Add(",Resultados");
+            float resultado = 0;
+            if (contAlumnosAprobados != 0)resultado = acumTiempoTotalExamenAlumnosAprobados / contAlumnosAprobados;
+            csv.Add($",Tiempo promedio de examen de los alumnos, {resultado} ");
+            csv.Add(",desde que inician el práctico ");
+            csv.Add(",hasta que terminan el teórico");
             try
             {
                 File.WriteAllLines(ruta, csv, Encoding.UTF8);
