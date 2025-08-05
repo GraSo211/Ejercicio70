@@ -1,5 +1,5 @@
 # Simulación de Examen Final - Ejercicio 70
-
+RECORDAR ACTUALIZAR EL PATH DEL ARCHIVO
 ## Enunciado
 
 > En el examen final de “Desarrollo Bajo Lenguajes Visuales” el lunes pasado, varios de los alumnos  
